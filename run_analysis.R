@@ -1,4 +1,5 @@
-## We need "dplyr" package to use pipe operator and cleaning functions
+## We will use plyr instead of in addition to dplyr to use its mass column rename by vector
+library(plyr)
 library(dplyr)
 
 ## Step 1. Let's merge train and test data
@@ -28,7 +29,7 @@ rm(test_all,train_all)
 # Read features file
 features<-read.table("features.txt")
 # Keep only straightforward std and mean features
-goodfeatures<-filter(features,grepl("mean()",V2,fixed=TRUE) | grepl("std()",V2,fixed=TRUE))
+goodfeatures<-dplyr::filter(features,grepl("mean()",V2,fixed=TRUE) | grepl("std()",V2,fixed=TRUE))
 # Now filter out data (keep first two rows)
 goodcolumns<-c(1,2,unlist(goodfeatures$V1)+2)
 gooddata<-data[,goodcolumns]
@@ -38,15 +39,22 @@ gooddata<-data[,goodcolumns]
 activities_labels<-read.table("activity_labels.txt")
 # Simpler to use as a vector
 labels<-unlist(activities_labels$V2)
-gooddata<-mutate(gooddata,activity_number=labels[activity_number])
+gooddata<-dplyr::mutate(gooddata,activity_number=labels[activity_number])
 
 ## Step 4. Appropriately label the data set with descriptive variable names
 
 # First column is already good, second one needs adjusting though, as it now contains factors
-gooddata<-rename(gooddata,activity=activity_number)
+gooddata<-dplyr::rename(gooddata,activity=activity_number)
 
 # To name measurement columns, recall filtered features list from step 3
-gooddata1<-rename
+# In order to mass-rename columns, we'll use plyr's function
+# First, let's prepare replace vector
+# It has to be converted to character, otherwise factors are presented by their numbers.
+replace<-as.character(goodfeatures$V2)
+names(replace)<-paste0("V",goodfeatures$V1)
+gooddata<-plyr::rename(gooddata,replace)
+
+## Step 5. Creates a tidy data set with the average of each variable for each activity and each subject
 
 
 
