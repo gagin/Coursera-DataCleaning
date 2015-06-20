@@ -1,8 +1,3 @@
----
-title: "CodeBook.md"
-output: html_document
----
-
 This script creates a summary view for means and standard deviations
 of accelerometer and gyroscope data collected from smartphones worn
 by 30 human test subjects while performing six activities
