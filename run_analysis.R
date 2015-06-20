@@ -75,5 +75,6 @@ meaned<- gooddata %>%
     group_by(subject,activity,variable) %>%
       summarize(mean=mean(value)) %>%
         spread(variable,mean)
-write.csv(meaned, "tidy_dataset_with_means_and_stds_meaned.csv")
-print("Resulting dataset has been written to file tidy_dataset_with_means_and_stds_meaned.csv")
+
+write.table(meaned, "tidy_dataset_with_means_and_stds_meaned.txt", row.names=FALSE)
+print("Resulting dataset has been written to file tidy_dataset_with_means_and_stds_meaned.txt")
