@@ -5,11 +5,13 @@ is used as a source:
 http://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones 
 To use it, download this file:
 https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip
-Unpack it, change to "UCI HAR Dataset" directory and clone code from GitHub there
+Unpack it to the directory with the run_analysis.R script
+So if you copied the code by command
    ```
-   cd "UCI HAR Dataset"
    git clone https://github.com/gagin/Coursera-DataCleaning
    ```
+Then "UCI HAR Dataset" should end up in the "Coursera-DataCleaning" directory.
+
 These are actions that were required from the run_analysis.R script: 
 1. Merge the training and the test sets to create one data set.
 2. Extract only the measurements on the mean and standard deviation for each measurement. 
@@ -17,10 +19,11 @@ These are actions that were required from the run_analysis.R script:
 4. Appropriately label the data set with descriptive variable names. 
 5. From the data set in step 4, create a second, independent tidy data set with the average of each variable for each activity and each subject.
 
-Final dataset is named "Resulting dataset has been written to file tidy_dataset_with_means_and_stds_meaned.csv" and, according to its name, it's in CSV format and can be read be:
+Final dataset is named "tidy_dataset_with_means_and_stds_meaned.txt"
+and can be read by this command:
    ```
-   data<-read.csv("tidy_dataset_with_means_and_stds_meaned.csv")
+   data<-read.table("tidy_dataset_with_means_and_stds_meaned.txt", header=TRUE)
    ```
-
-Notes by David Hood (Community TA) were used while working on the project https://class.coursera.org/getdata-015/forum/thread?thread_id=26
-In particular, data Intertial Signals folders was not read, as it doesn't include the measurements on the mean and standard deviation, which will actually be used. Although, despite idea that both wide and narrow forms of the resulting data will be tidy, and data was actually converted to narrow form to calculate means without naming all the columns (I had to use plyr package to do this at the step 4), the final dataset is expanded to wide form, so that each variable will be in one column.
+It is tidy, because each row contains one observation with variables from different sensors in multiple columns, and so each observation is in one row and each variable is in one column. 
+According to forum post by Community TA David Hood (https://class.coursera.org/getdata-015/forum/thread?thread_id=26), both wide and narrow forms would be acceptible, and script actually converted the data to narrow form while doing summarizing, but wide forms seems to be more proper, as variables are variables, and so they should be in columns.
+Also, following the same notes, data Intertial Signals folders was not read, as it doesn't include the measurements on the mean and standard deviation, which will actually be used.
