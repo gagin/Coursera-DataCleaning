@@ -1,12 +1,13 @@
 ## We will use plyr instead of in addition to dplyr to use its mass column rename by vector
 library(plyr)
 library(dplyr)
+library(tidyr)
 
 ## Step 1. Let's merge train and test data
 
 # 1.1 Bind subject number and activity number
 
-# Read it all from test, bind, clean up memory
+# Read it all from test, put numbers for subject and activity to the first two columns, clean up memory
 test_subjects<-read.table("test/subject_test.txt",col.names="subject")
 test_Y<-read.table("test/y_test.txt",col.names="activity_number")
 test_X<-read.table("test/X_test.txt")
@@ -28,36 +29,49 @@ rm(test_all,train_all)
 
 # Read features file
 features<-read.table("features.txt")
+
 # Keep only straightforward std and mean features
-goodfeatures<-dplyr::filter(features,grepl("mean()",V2,fixed=TRUE) | grepl("std()",V2,fixed=TRUE))
-# Now filter out data (keep first two rows)
+goodfeatures<-filter(features,grepl("mean()",V2,fixed=TRUE) | grepl("std()",V2,fixed=TRUE))
+
+# Now filter out data. Keep first two rows as they have information on subject and activity, not
+# measurements. Shift column numbers for measurements by 2 to compensate for that.
 goodcolumns<-c(1,2,unlist(goodfeatures$V1)+2)
 gooddata<-data[,goodcolumns]
 
 ## Step 3. Use descriptive activity names to name the activities in the data set
 
 activities_labels<-read.table("activity_labels.txt")
-# Simpler to use as a vector
+# Simpler to use as a vector, so unlist
 labels<-unlist(activities_labels$V2)
-gooddata<-dplyr::mutate(gooddata,activity_number=labels[activity_number])
+gooddata<-mutate(gooddata,activity_number=labels[activity_number])
 
 ## Step 4. Appropriately label the data set with descriptive variable names
 
 # First column is already good, second one needs adjusting though, as it now contains factors
-gooddata<-dplyr::rename(gooddata,activity=activity_number)
+gooddata<-rename(gooddata,activity=activity_number)
 
 # To name measurement columns, recall filtered features list from step 3
-# In order to mass-rename columns, we'll use plyr's function
+# In order to mass-rename columns withour manually naming them, we'll use plyr's function
 # First, let's prepare replace vector
+
 # It has to be converted to character, otherwise factors are presented by their numbers.
-replace<-as.character(goodfeatures$V2)
+# Also, let's remove parenthesis, they are just visual noise
+# We'll use "fixed=TRUE" so parenthesis wouldn't need to be escaped
+replace<-sub("()","", as.character(goodfeatures$V2), fixed=TRUE)
+# Also, auto-generated column names have "V" in them, so let's attach it
 names(replace)<-paste0("V",goodfeatures$V1)
+# Now we can rename
+# Dplyr package has been loaded last, so its functions are default,
+# and plyr's rename (which is different) should be named fully
 gooddata<-plyr::rename(gooddata,replace)
 
 ## Step 5. Creates a tidy data set with the average of each variable for each activity and each subject
 
-
-
-
-
-
+# It would be inconvenient to summarize wide form of the data, so let's make it narrow before summarizing
+meaned<- gooddata %>%
+  gather(variable,value,-subject,-activity) %>%
+    group_by(subject,activity,variable) %>%
+      summarize(mean=mean(value)) %>%
+        spread(variable,mean)
+write.csv(meaned, "tidy_dataset_with_means_and_stds_meaned.csv")
+print("Resulting dataset has been written to file tidy_dataset_with_means_and_stds_meaned.csv")
